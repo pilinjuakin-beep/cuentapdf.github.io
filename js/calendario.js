@@ -46,6 +46,21 @@ const getDateKey = (date) => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
+const getDateLabelFromKey = (dateKey, capitalizeFirst = false) => {
+    const [year, month, day] = dateKey.split('-').map(Number);
+    const label = new Date(year, month - 1, day).toLocaleDateString('es-CO', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+    });
+    return capitalizeFirst ? label.charAt(0).toUpperCase() + label.slice(1) : label;
+};
+
+const setModalTitle = (text) => {
+    const title = document.getElementById('modalDayTitle');
+    if (title) title.textContent = text;
+};
+
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
@@ -190,6 +205,22 @@ const getDaySummary = (record) => {
     return '';
 };
 
+const getRestReasonValue = () => document.getElementById('restReason')?.value?.trim() || '';
+
+const setRestReasonError = (visible) => {
+    const restReason = document.getElementById('restReason');
+    const error = document.getElementById('restReasonError');
+    restReason?.classList.toggle('input-invalid', visible);
+    error?.classList.toggle('hidden', !visible);
+};
+
+const syncRestSaveState = () => {
+    const saveButton = document.getElementById('modalSaveRest');
+    const hasMotivo = getRestReasonValue().length > 0;
+    if (saveButton) saveButton.disabled = !hasMotivo;
+    if (hasMotivo) setRestReasonError(false);
+};
+
 const setModalView = (view) => {
     const initial = document.getElementById('modalInitialActions');
     const existing = document.getElementById('modalExistingActions');
@@ -291,14 +322,20 @@ const openDayModal = (date) => {
 const handleDayDecision = (worked) => {
     if (!selectedDateKey) return;
     const subtitle = document.getElementById('modalSubtitle');
+    const dateLabel = getDateLabelFromKey(selectedDateKey);
+
     if (worked) {
+        setModalTitle(`Registro del ${dateLabel}`);
         setModalView('edit');
         if (subtitle) subtitle.textContent = 'Marca rutas, adicionales y horas extras, luego guarda.';
     } else {
         const restReason = document.getElementById('restReason');
         const record = calendarState[selectedDateKey];
         if (restReason) restReason.value = record?.motivo || '';
+        setModalTitle(`No trabajaste el ${dateLabel}`);
         setModalView('rest');
+        syncRestSaveState();
+        restReason?.focus();
         if (subtitle) subtitle.textContent = 'Indica el motivo por el cual no trabajaste ese día.';
     }
 };
@@ -309,6 +346,8 @@ const closeDayModal = () => {
     modal.classList.add('hidden');
     const restReason = document.getElementById('restReason');
     if (restReason) restReason.value = '';
+    setRestReasonError(false);
+    syncRestSaveState();
     setModalView('new');
     selectedDateKey = '';
 };
@@ -320,6 +359,7 @@ const handleEditDay = () => {
     if (!record || record.status === 'none') return;
 
     if (record.status === 'worked') {
+        setModalTitle(`Registro del ${getDateLabelFromKey(selectedDateKey)}`);
         setModalView('edit');
         if (subtitle) subtitle.textContent = 'Modifica rutas, adicionales y horas extras, luego guarda.';
         return;
@@ -327,7 +367,10 @@ const handleEditDay = () => {
 
     const restReason = document.getElementById('restReason');
     if (restReason) restReason.value = record.motivo || '';
+    setModalTitle(`No trabajaste el ${getDateLabelFromKey(selectedDateKey)}`);
     setModalView('rest');
+    syncRestSaveState();
+    restReason?.focus();
     if (subtitle) subtitle.textContent = 'Modifica el motivo de tu ausencia y guarda.';
 };
 
@@ -340,11 +383,14 @@ const deleteDayRecord = () => {
     closeDayModal();
 };
 
-const saveRestDayRecord = () => {
+const saveRestDayRecord = (event) => {
+    event?.preventDefault();
     if (!selectedDateKey) return;
-    const motivo = document.getElementById('restReason')?.value?.trim() || '';
+
+    const motivo = getRestReasonValue();
     if (!motivo) {
-        alert('Escribe el motivo por el cual no trabajaste.');
+        setRestReasonError(true);
+        document.getElementById('restReason')?.focus();
         return;
     }
 
@@ -396,7 +442,8 @@ const bindCalendarEvents = () => {
     document.getElementById('modalEdit')?.addEventListener('click', handleEditDay);
     document.getElementById('modalDelete')?.addEventListener('click', deleteDayRecord);
     document.getElementById('modalCloseExisting')?.addEventListener('click', closeDayModal);
-    document.getElementById('modalSaveRest')?.addEventListener('click', saveRestDayRecord);
+    document.getElementById('restDayForm')?.addEventListener('submit', saveRestDayRecord);
+    document.getElementById('restReason')?.addEventListener('input', syncRestSaveState);
     document.getElementById('modalCancelRest')?.addEventListener('click', closeDayModal);
     document.getElementById('modalSave')?.addEventListener('click', saveDayRecord);
     document.getElementById('modalCancel')?.addEventListener('click', closeDayModal);

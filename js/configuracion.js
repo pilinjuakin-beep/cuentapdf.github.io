@@ -40,14 +40,18 @@ const fillForm = (config) => {
             return;
         }
 
+        if (field.tagName === 'SELECT') {
+            field.value = value ?? '';
+            console.log(`[config] set ${key} =`, value);
+            return;
+        }
+
         // If multiple elements (e.g., radio NodeList), set appropriately
         if (typeof field.length === 'number' && field.length > 1) {
             console.log(`[config] setting collection for ${key}, length=${field.length}`);
             Array.from(field).forEach(f => {
                 if (f.type === 'radio' || f.type === 'checkbox') {
                     f.checked = (String(f.value) === String(value));
-                } else {
-                    try { f.value = value; } catch (e) { console.warn('set value failed', e); }
                 }
             });
             return;

@@ -69,17 +69,20 @@
                 <button class="btn btn-ghost" id="modalCloseExisting">Cancelar</button>
             </div>
             <div class="modal-details hidden" id="modalRestDetails">
-                <section class="form-section">
-                    <h4>Motivo de ausencia</h4>
-                    <label>
-                        <span>¿Por qué no trabajaste?</span>
-                        <textarea id="restReason" rows="3" placeholder="Ej. Enfermedad, permiso, incapacidad..." required></textarea>
-                    </label>
-                </section>
-                <div class="modal-actions">
-                    <button class="btn btn-primary" id="modalSaveRest">Guardar</button>
-                    <button class="btn btn-ghost" id="modalCancelRest">Cancelar</button>
-                </div>
+                <form id="restDayForm" novalidate>
+                    <section class="form-section">
+                        <h4>Motivo de ausencia</h4>
+                        <label>
+                            <span>¿Por qué no trabajaste? <em class="required-mark">(obligatorio)</em></span>
+                            <textarea id="restReason" name="restReason" rows="3" placeholder="Ej. Enfermedad, permiso, incapacidad..." required aria-required="true" aria-describedby="restReasonError"></textarea>
+                        </label>
+                        <p id="restReasonError" class="field-error hidden" role="alert">Debes indicar el motivo de tu descanso antes de guardar.</p>
+                    </section>
+                    <div class="modal-actions">
+                        <button class="btn btn-primary" type="submit" id="modalSaveRest" disabled>Guardar</button>
+                        <button class="btn btn-ghost" type="button" id="modalCancelRest">Cancelar</button>
+                    </div>
+                </form>
             </div>
             <div class="modal-details hidden" id="modalDetails">
                 <section class="form-section">
