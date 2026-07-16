@@ -6,8 +6,7 @@
 
     const pdfFormatCurrency = (value) => {
         return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
+            style: 'decimal',
             maximumFractionDigits: 0
         }).format(value);
     };
@@ -160,7 +159,12 @@ const pdfBuildContent = () => {
 const pdfEscapeText = (text) => {
     return String(text || '')
         .normalize('NFD')
-        .replace(/[\u0000-\u001F\u007F]/g, '')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/ñ/g, 'n')
+        .replace(/Ñ/g, 'N')
+        .replace(/\$/g, '')
+        .replace(/–/g, '-')
+        .replace(/—/g, '-')
         .replace(/\\/g, '\\\\')
         .replace(/\(/g, '\\(')
         .replace(/\)/g, '\\)');
@@ -213,7 +217,7 @@ const pdfCreateBlob = (lines) => {
     const objects = [];
     objects.push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
     objects.push('2 0 obj\n<< /Type /Pages /Kids [4 0 R] /Count 1 >>\nendobj\n');
-    objects.push('3 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n');
+    objects.push('3 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\nendobj\n');
     objects.push('4 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>\nendobj\n');
     objects.push(`5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}\nendstream\nendobj\n`);
 

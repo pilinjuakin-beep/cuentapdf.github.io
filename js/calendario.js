@@ -130,6 +130,14 @@ const renderCalendar = () => {
     monthLabel.textContent = getMonthLabel(currentDate);
     grid.innerHTML = '';
 
+    const dayNames = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+    dayNames.forEach(day => {
+        const dayNameCell = document.createElement('div');
+        dayNameCell.classList.add('calendar-day', 'day-name');
+        dayNameCell.textContent = day;
+        grid.appendChild(dayNameCell);
+    });
+
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -449,8 +457,13 @@ const bindCalendarEvents = () => {
     document.getElementById('modalCancel')?.addEventListener('click', closeDayModal);
 };
 
+let calendarInitialized = false;
+
 const initCalendar = () => {
     if (document.body.dataset.page !== 'calendar') return;
+    if (calendarInitialized) return;
+    calendarInitialized = true;
+    
     calendarState = calendarLoadCalendarState();
     bindCalendarEvents();
     renderCalendarSummary();
@@ -459,4 +472,3 @@ const initCalendar = () => {
 
 window.initCalendar = initCalendar;
 window.addEventListener('DOMContentLoaded', initCalendar);
-if (document.readyState !== 'loading') initCalendar();
