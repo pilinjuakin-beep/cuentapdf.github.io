@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - Cuenta de Cobro</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/app.js" defer></script>
+</head>
+<body data-page="config">
+    <main class="page-shell">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">Inicio</p>
+                <h1>Configuración inicial</h1>
+                <p class="subtitle">Completa tus datos para que la app pueda generar tus cuentas de cobro.</p>
+            </div>
+            <button class="btn btn-ghost" onclick="history.back()">← Volver</button>
+        </section>
+
+        <section class="panel-form">
+            <form id="configForm" class="form-grid">
+                <label>
+                    <span>Nombre completo</span>
+                    <input type="text" name="nombre" required>
+                </label>
+                <label>
+                    <span>Número de cédula</span>
+                    <input type="text" name="cedula" required>
+                </label>
+                <label>
+                    <span>Correo</span>
+                    <input type="email" name="correo" required>
+                </label>
+                <label>
+                    <span>Teléfono</span>
+                    <input type="tel" name="telefono" required>
+                </label>
+                <label>
+                    <span>Banco</span>
+                    <input type="text" name="banco" required>
+                </label>
+                <label>
+                    <span>Tipo de cuenta</span>
+                    <select name="tipoCuenta" required>
+                        <option value="">Selecciona</option>
+                        <option value="Ahorros">Ahorros</option>
+                        <option value="Corriente">Corriente</option>
+                    </select>
+                </label>
+                <label>
+                    <span>Número de cuenta</span>
+                    <input type="text" name="numeroCuenta" required>
+                </label>
+                <label>
+                    <span>Nombre de la empresa</span>
+                    <input type="text" name="empresa" required>
+                </label>
+                <label>
+                    <span>NIT</span>
+                    <input type="text" name="nit" required>
+                </label>
+                <label>
+                    <span>Dirección</span>
+                    <input type="text" name="direccion" required>
+                </label>
+                <label>
+                    <span>Ciudad</span>
+                    <input type="text" name="ciudad" required>
+                </label>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit">Guardar configuración</button>
+                </div>
+            </form>
+            <p id="configMessage" class="form-message"></p>
+        </section>
+
+    </main>
+    <script src="../js/configuracion.js" defer></script>
+</body>
+</html>

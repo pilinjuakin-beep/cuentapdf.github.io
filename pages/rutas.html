@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Rutas - Cuenta de Cobro</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+    <script>
+        try {
+            if (!localStorage.getItem('cuentaCobro_config')) {
+                window.location.href = 'configuracion.html';
+            }
+        } catch (error) {
+            console.warn(error);
+        }
+    </script>
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/app.js" defer></script>
+</head>
+<body data-page="rutas">
+    <main class="page-shell">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">Rutas</p>
+                <h1>Administrar Rutas</h1>
+                <p class="subtitle">Agrega, edita o elimina las rutas que usarás para tus registros diarios.</p>
+            </div>
+            <button class="btn btn-ghost" onclick="history.back()">← Volver</button>
+        </section>
+
+        <section class="panel-form">
+            <form id="routeForm" class="form-grid">
+                <input type="hidden" name="routeId" value="">
+                <label>
+                    <span>Nombre de la ruta</span>
+                    <input type="text" name="rutaNombre" placeholder="Ej. Ruta Barranquilla" required>
+                </label>
+                <label>
+                    <span>Valor</span>
+                    <input type="number" name="rutaValor" placeholder="100000" min="0" required>
+                </label>
+                <div class="form-actions">
+                    <button id="routeSubmit" class="btn btn-primary" type="submit">Agregar ruta</button>
+                    <button id="routeClear" class="btn btn-secondary" type="button">Limpiar</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel-card">
+            <div class="section-header">
+                <h2>Rutas guardadas</h2>
+                <span id="routeSummary" class="muted-text">0 rutas guardadas</span>
+            </div>
+            <div id="routeList" class="routes-list"></div>
+        </section>
+    </main>
+    <script src="../js/rutas.js" defer></script>
+</body>
+</html>

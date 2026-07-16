@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - Cuenta de Cobro</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/app.js" defer></script>
+    <script src="../js/perfil.js" defer></script>
+</head>
+<body data-page="perfil">
+    <main class="page-shell">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">Inicio</p>
+                <h1>Mi Perfil</h1>
+                <p class="subtitle">Revisa y edita tus datos personales.</p>
+            </div>
+            <button class="btn btn-ghost" onclick="history.back()">← Volver</button>
+        </section>
+
+        <section class="panel-form">
+            <div class="profile-grid">
+                <div><strong>Nombre completo</strong><div id="p-nombre"></div></div>
+                <div><strong>Número de cédula</strong><div id="p-cedula"></div></div>
+                <div><strong>Correo</strong><div id="p-correo"></div></div>
+                <div><strong>Teléfono</strong><div id="p-telefono"></div></div>
+                <div><strong>Banco</strong><div id="p-banco"></div></div>
+                <div><strong>Tipo de cuenta</strong><div id="p-tipoCuenta"></div></div>
+                <div><strong>Número de cuenta</strong><div id="p-numeroCuenta"></div></div>
+                <div><strong>Empresa</strong><div id="p-empresa"></div></div>
+                <div><strong>NIT</strong><div id="p-nit"></div></div>
+                <div><strong>Dirección</strong><div id="p-direccion"></div></div>
+                <div><strong>Ciudad</strong><div id="p-ciudad"></div></div>
+            </div>
+
+            <div class="form-actions" style="margin-top:16px;">
+                <a class="btn btn-primary" id="editBtn">Editar configuración</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

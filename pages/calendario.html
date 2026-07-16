@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario - Cuenta de Cobro</title>
+    <link rel="stylesheet" href="../css/estilos.css">
+    <script>
+        try {
+            if (!localStorage.getItem('cuentaCobro_config')) {
+                window.location.href = 'configuracion.html';
+            }
+        } catch (error) {
+            console.warn(error);
+        }
+    </script>
+    <script src="../js/storage.js" defer></script>
+    <script src="../js/pdf.js" defer></script>
+    <script src="../js/app.js" defer></script>
+</head>
+<body data-page="calendar">
+    <main class="page-shell">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">Calendario</p>
+                <h1>Registro diario</h1>
+                <p class="subtitle">Selecciona un día para registrar si trabajaste, tus rutas y adicionales.</p>
+            </div>
+            <div class="action-group">
+                <button class="btn btn-secondary" onclick="history.back()">← Volver</button>
+                <button class="btn btn-secondary" data-navigate="../pages/configuracion.html?edit=true">Editar Configuración</button>
+                <button class="btn btn-primary" data-action="download-pdf">Descargar PDF</button>
+                <button class="btn btn-primary" data-navigate="../index.html">Inicio</button>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="card">
+                <span class="card-label">Mes cotizado</span>
+                <p class="card-value" id="monthTotal">$0</p>
+                <p class="muted-text"><span id="monthLabel"></span></p>
+            </article>
+        </section>
+
+        <section class="panel-card calendar-panel">
+            <div class="calendar-header">
+                <button class="btn btn-ghost btn-small" id="prevMonth">Mes anterior</button>
+                <div>
+                    <h2 id="calendarMonth"></h2>
+                    <p id="calendarSubtitle" class="subtitle">Haz clic en un día para registrar tu jornada.</p>
+                </div>
+                <button class="btn btn-ghost btn-small" id="nextMonth">Mes siguiente</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </section>
+    </main>
+
+    <div class="modal-overlay hidden" id="dayModal">
+        <div class="modal-card">
+            <h3 id="modalDayTitle">¿Trabajaste hoy?</h3>
+            <p class="subtitle" id="modalSubtitle"></p>
+            <div class="modal-actions" id="modalInitialActions">
+                <button class="btn btn-primary" id="modalYes">Sí</button>
+                <button class="btn btn-danger" id="modalNo">No</button>
+            </div>
+            <div class="modal-actions hidden" id="modalExistingActions">
+                <button class="btn btn-primary" id="modalEdit">Editar día</button>
+                <button class="btn btn-danger" id="modalDelete">Eliminar día</button>
+                <button class="btn btn-ghost" id="modalCloseExisting">Cancelar</button>
+            </div>
+            <div class="modal-details hidden" id="modalRestDetails">
+                <section class="form-section">
+                    <h4>Motivo de ausencia</h4>
+                    <label>
+                        <span>¿Por qué no trabajaste?</span>
+                        <textarea id="restReason" rows="3" placeholder="Ej. Enfermedad, permiso, incapacidad..." required></textarea>
+                    </label>
+                </section>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="modalSaveRest">Guardar</button>
+                    <button class="btn btn-ghost" id="modalCancelRest">Cancelar</button>
+                </div>
+            </div>
+            <div class="modal-details hidden" id="modalDetails">
+                <section class="form-section">
+                    <h4>Rutas trabajadas</h4>
+                    <div id="routeCheckboxes"></div>
+                </section>
+                <section class="form-section">
+                    <h4>Adicionales</h4>
+                    <div id="additionsCheckboxes" class="route-checkbox-grid"></div>
+                </section>
+                <section class="form-section">
+                    <h4>Horas extras</h4>
+                    <div class="hours-extra-row">
+                        <label>
+                            <span>Cantidad de horas</span>
+                            <input id="extraHours" type="number" min="0" value="0">
+                        </label>
+                        <label>
+                            <span>Valor por hora</span>
+                            <input id="hourRate" type="number" value="8000" readonly>
+                        </label>
+                        <div class="hours-summary">
+                            <span>Total valor horas</span>
+                            <strong id="hoursTotal">$0</strong>
+                        </div>
+                    </div>
+                </section>
+                <section class="form-section day-total-card">
+                    <h4>Total del día</h4>
+                    <p class="day-total-value" id="dayTotalValue">$0</p>
+                </section>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="modalSave">Guardar</button>
+                    <button class="btn btn-ghost" id="modalCancel">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/calendario.js" defer></script>
+</body>
+</html>

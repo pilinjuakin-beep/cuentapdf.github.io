@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuenta de Cobro</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <script>
+        try {
+            const cfg = localStorage.getItem('cuentaCobro_config');
+            if (!cfg) {
+                window.location.href = 'pages/configuracion.html';
+            }
+        } catch (e) {
+            console.warn('LocalStorage inaccesible', e);
+        }
+    </script>
+    <script src="js/storage.js" defer></script>
+</head>
+
+<body data-page="home">
+    <main class="page-shell">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">Aplicación</p>
+                <h1 id="welcomeTitle">Cuenta de Cobro</h1>
+                <p class="subtitle">Registra tus servicios diarios y genera tu cuenta de cobro profesional.</p>
+                <p id="routeInfo" class="subtitle">Configura tus rutas para comenzar.</p>
+            </div>
+            <div class="action-group">
+                <button class="btn btn-primary" data-navigate="pages/configuracion.html">Configuración</button>
+                <button class="btn btn-secondary" data-navigate="pages/calendario.html">Calendario</button>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="card">
+                <span class="card-label">Mes cotizado</span>
+                <p class="card-value" id="monthTotal">$0</p>
+                <p class="muted-text"><span id="monthLabel"></span></p>
+            </article>
+            <article class="card">
+                <span class="card-label">Dinero ganado este mes</span>
+                <p class="card-value" data-metric="earned">$0</p>
+            </article>
+            <article class="card">
+                <span class="card-label">Días trabajados</span>
+                <p class="card-value" data-metric="workedDays">0</p>
+            </article>
+            <article class="card">
+                <span class="card-label">Días no trabajados</span>
+                <p class="card-value" data-metric="restDays">0</p>
+            </article>
+            <article class="card">
+                <span class="card-label">Promedio diario</span>
+                <p class="card-value" data-metric="dailyAverage">$0</p>
+            </article>
+            <article class="card">
+                <span class="card-label">Proyección mensual</span>
+                <p class="card-value" data-metric="projection">$0</p>
+            </article>
+        </section>
+
+        <section class="panel-overview">
+            <div class="panel-card">
+                <h2>Acciones rápidas</h2>
+                <div class="button-grid">
+                    <button class="btn btn-primary" data-navigate="pages/calendario.html">Abrir Calendario</button>
+                    <button class="btn btn-secondary" data-navigate="pages/estadisticas.html">Ver Estadísticas</button>
+                    <button class="btn btn-secondary" data-navigate="pages/rutas.html">Administrar Rutas</button>
+                    <button class="btn btn-secondary" data-navigate="pages/configuracion.html?edit=true">Editar Configuración</button>
+                    <button class="btn btn-ghost" data-action="download-pdf">Generar PDF</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/pdf.js" defer></script>
+    <script src="js/dashboard.js" defer></script>
+    <script src="js/app.js" defer></script>
+</body>
+
+</html>
