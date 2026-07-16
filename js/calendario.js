@@ -130,7 +130,7 @@ const renderCalendar = () => {
     monthLabel.textContent = getMonthLabel(currentDate);
     grid.innerHTML = '';
 
-    const dayNames = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+    const dayNames = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
     dayNames.forEach(day => {
         const dayNameCell = document.createElement('div');
         dayNameCell.classList.add('calendar-day', 'day-name');
