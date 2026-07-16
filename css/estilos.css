@@ -372,6 +372,8 @@ textarea.input-invalid {
 
 .modal-card {
     width: min(660px, 100%);
+    max-height: 90vh;      /* Nunca será más alto que la pantalla */
+    overflow-y: auto;      /* Permite bajar con el dedo */
     background: var(--surface);
     border-radius: 28px;
     padding: 28px;
