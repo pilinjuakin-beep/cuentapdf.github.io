@@ -43,7 +43,8 @@ const ADDITIONAL_OPTIONS = [
     { id: 'add_galapa', label: 'viaje a Galapa', value: 15000 },
     { id: 'add_cienaga', label: 'viaje a Ciénaga', value: 25000 },
     { id: 'add_lomita', label: 'viaje a Lomita de Arena', value: 25000 },
-    { id: 'add_davita', label: 'viaje a Davita', value: 40000 }
+    { id: 'add_davita', label: 'viaje a Davita', value: 40000 },
+    { id: 'add_sabana_larga', label: 'viaje a Sabana Larga', value: 80000 }
 ];
 
 const getRouteName = (routeId, routes) => {

@@ -169,13 +169,17 @@ const ADDITIONAL_OPTIONS = [
     { id: 'add_galapa', label: 'Galapa', value: 15000 },
     { id: 'add_cienaga', label: 'Ciénaga', value: 25000 },
     { id: 'add_lomita', label: 'Lomita de Arena', value: 25000 },
-    { id: 'add_davita', label: 'Davita', value: 40000 }
+    { id: 'add_davita', label: 'Davita', value: 40000 },
+    { id: 'add_sabana_larga', label: 'Sabana Larga', value: 80000 }
 ];
-const DEFAULT_ROUTE = { id: 'route_barranquilla', nombre: 'Barranquilla', valor: 100000 };
+const DEFAULT_ROUTES = [
+    { id: 'route_barranquilla_completo', nombre: 'Barranquilla día completo', valor: 100000 },
+    { id: 'route_barranquilla_medio', nombre: 'Barranquilla medio día', valor: 50000 }
+];
 const HOURLY_RATE = 8000;
 
 const getRouteOptions = (storedRoutes) => {
-    const allRoutes = [DEFAULT_ROUTE, ...storedRoutes];
+    const allRoutes = [...DEFAULT_ROUTES, ...storedRoutes];
     return allRoutes.reduce((unique, route) => {
         if (!unique.some((item) => item.id === route.id)) {
             unique.push(route);
