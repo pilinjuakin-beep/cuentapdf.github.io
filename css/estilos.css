@@ -301,6 +301,66 @@ textarea.input-invalid {
     margin-bottom: 20px;
 }
 
+.invoice-type-selector {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    background: var(--surface-strong);
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.invoice-type-selector label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.invoice-type-selector input[type="radio"] {
+    width: auto;
+    cursor: pointer;
+}
+
+.week-selector {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    background: var(--surface-strong);
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.week-selector label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.week-selector select {
+    max-width: 300px;
+}
+
+.monthly-options {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    background: var(--surface-strong);
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+}
+
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -344,6 +404,84 @@ textarea.input-invalid {
 
 .calendar-day--today {
     box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.28);
+}
+
+.calendar-day--invoiced-monthly {
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(59, 130, 246, 0.12);
+    position: relative;
+}
+
+.calendar-day--invoiced-monthly::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.9rem;
+    color: var(--primary-strong);
+    font-weight: 700;
+}
+
+.calendar-day--invoiced-weekly {
+    border-color: rgba(16, 163, 74, 0.5);
+    background: rgba(16, 163, 74, 0.12);
+    position: relative;
+}
+
+.calendar-day--invoiced-weekly::after {
+    content: 'S';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.9rem;
+    color: var(--success);
+    font-weight: 700;
+}
+
+.calendar-day--week-invoiced {
+    opacity: 0.4;
+    text-decoration: line-through;
+    pointer-events: none;
+}
+
+.calendar-day--month-invoiced {
+    opacity: 0.4;
+    text-decoration: line-through;
+    pointer-events: none;
+}
+
+.week-invoice-badge {
+    display: none;
+    margin: 12px 0;
+    padding: 10px 16px;
+    background: rgba(16, 163, 74, 0.15);
+    border: 1px solid rgba(16, 163, 74, 0.3);
+    border-radius: 12px;
+    color: var(--success);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.week-invoice-badge.show {
+    display: block;
+}
+
+.month-invoice-badge {
+    display: none;
+    margin: 12px 0;
+    padding: 10px 16px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    color: var(--primary-strong);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.month-invoice-badge.show {
+    display: block;
 }
 
 .calendar-day span {

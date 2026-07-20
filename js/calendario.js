@@ -37,6 +37,11 @@ const calendarSaveCalendarState = (state) => {
 let currentDate = new Date();
 let calendarState = {};
 let selectedDateKey = '';
+let invoiceType = 'monthly';
+let selectedWeek = null;
+
+// Asegurarse de que currentDate siempre esté en el mes actual al inicializar
+currentDate = new Date();
 
 const getMonthLabel = (date) => {
     return date.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
@@ -74,6 +79,136 @@ const getDayStatus = (date) => {
     return calendarState[key]?.status || 'none';
 };
 
+const getInvoicedStatus = (date) => {
+    const key = getDateKey(date);
+    return calendarState[key]?.invoiced || false;
+};
+
+const getWeeksInMonth = (year, month) => {
+    const weeks = [];
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    let current = new Date(firstDay);
+    const dayOfWeek = current.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    current.setDate(current.getDate() + mondayOffset);
+    
+    while (current <= lastDay) {
+        const monday = new Date(current);
+        const sunday = new Date(current);
+        sunday.setDate(sunday.getDate() + 6);
+        
+        if (monday.getMonth() === month || sunday.getMonth() === month) {
+            weeks.push({
+                start: new Date(monday),
+                end: new Date(sunday),
+                label: `${monday.getDate()} ${monday.toLocaleDateString('es-CO', { month: 'short' })} - ${sunday.getDate()} ${sunday.toLocaleDateString('es-CO', { month: 'short' })}`
+            });
+        }
+        
+        current.setDate(current.getDate() + 7);
+    }
+    
+    return weeks;
+};
+
+const populateWeekSelector = () => {
+    const weekSelect = document.getElementById('weekSelect');
+    if (!weekSelect) return;
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const weeks = getWeeksInMonth(year, month);
+    
+    weekSelect.innerHTML = '';
+    weeks.forEach((week, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `Semana ${index + 1}: ${week.label}`;
+        weekSelect.appendChild(option);
+    });
+    
+    if (weeks.length > 0) {
+        // Auto-seleccionar la semana que contiene la fecha actual
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalizar la fecha actual
+        let currentWeekIndex = 0;
+        
+        for (let i = 0; i < weeks.length; i++) {
+            const week = weeks[i];
+            const weekStart = new Date(week.start);
+            const weekEnd = new Date(week.end);
+            weekStart.setHours(0, 0, 0, 0);
+            weekEnd.setHours(23, 59, 59, 999);
+            
+            if (today >= weekStart && today <= weekEnd) {
+                currentWeekIndex = i;
+                break;
+            }
+        }
+        
+        selectedWeek = currentWeekIndex;
+        weekSelect.value = currentWeekIndex;
+    }
+};
+
+const markDaysAsInvoiced = (startDate, endDate, invoiceNumber, invoiceType = 'monthly') => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const key = getDateKey(d);
+        if (calendarState[key]) {
+            calendarState[key].invoiced = true;
+            calendarState[key].invoiceNumber = invoiceNumber;
+            calendarState[key].invoiceType = invoiceType;
+        }
+    }
+    
+    calendarSaveCalendarState(calendarState);
+    renderCalendar();
+    
+    // Pasar automáticamente a la siguiente semana si está disponible
+    if (invoiceType === 'weekly') {
+        const weekSelect = document.getElementById('weekSelect');
+        if (weekSelect) {
+            const currentWeekIndex = parseInt(weekSelect.value);
+            const weeks = getWeeksInMonth(currentDate.getFullYear(), currentDate.getMonth());
+            
+            if (currentWeekIndex < weeks.length - 1) {
+                weekSelect.value = currentWeekIndex + 1;
+                selectedWeek = currentWeekIndex + 1;
+                weekSelect.dispatchEvent(new Event('change'));
+            }
+        }
+    }
+};
+
+window.markDaysAsInvoiced = markDaysAsInvoiced;
+
+const markDaysAsInvoicedMonthly = (startDate, endDate, invoiceNumber, includeWeekly) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const key = getDateKey(d);
+        if (calendarState[key]) {
+            // Solo marcar como mensual si no está facturado semanalmente o si el usuario quiere incluir semanales
+            if (!calendarState[key].invoiced || includeWeekly || calendarState[key].invoiceType !== 'weekly') {
+                calendarState[key].invoiced = true;
+                calendarState[key].invoiceNumber = invoiceNumber;
+                calendarState[key].invoiceType = 'monthly';
+            }
+        }
+    }
+    
+    calendarSaveCalendarState(calendarState);
+    renderCalendar();
+};
+
+window.markDaysAsInvoicedMonthly = markDaysAsInvoicedMonthly;
+
 const updateText = (selector, text) => {
     const element = document.querySelector(selector);
     if (element) {
@@ -110,6 +245,16 @@ const createCalendarCell = (date, isCurrentMonth) => {
         button.classList.add('calendar-day--rest');
     }
 
+    const key = getDateKey(date);
+    if (calendarState[key]?.invoiced) {
+        const invoiceType = calendarState[key].invoiceType || 'monthly';
+        if (invoiceType === 'weekly') {
+            button.classList.add('calendar-day--invoiced-weekly');
+        } else {
+            button.classList.add('calendar-day--invoiced-monthly');
+        }
+    }
+
     if (getDateKey(date) === getDateKey(new Date())) {
         button.classList.add('calendar-day--today');
     }
@@ -129,6 +274,10 @@ const renderCalendar = () => {
 
     monthLabel.textContent = getMonthLabel(currentDate);
     grid.innerHTML = '';
+
+    if (invoiceType === 'weekly') {
+        populateWeekSelector();
+    }
 
     const dayNames = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
     dayNames.forEach(day => {
@@ -265,6 +414,14 @@ const openDayModal = (date) => {
         adicionales: [],
         horasExtras: { cantidad: 0, valorPorHora: HOURLY_RATE },
     };
+
+    // Verificar si el día está facturado
+    if (record.invoiced) {
+        const invoiceNumber = record.invoiceNumber || 'cuenta de cobro';
+        if (!confirm(`Este día ya está incluido en ${invoiceNumber}. ¿Quieres editar esta cuenta de cobro del día ${date.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}?`)) {
+            return;
+        }
+    }
 
     title.textContent = `¿Trabajaste el ${date.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}?`;
     subtitle.textContent = 'Selecciona la opción correspondiente para guardar tu jornada.';
@@ -429,6 +586,13 @@ const saveDayRecord = () => {
 
     const selectedRoutes = routeInputs.filter((i) => i.checked).map((i) => i.value);
     const selectedAdditions = additionInputs.filter((i) => i.checked).map((i) => ({ id: i.value, value: Number(i.dataset.value || 0) }));
+    
+    // Validación: debe haber al menos una ruta, adicional o horas extras
+    if (selectedRoutes.length === 0 && selectedAdditions.length === 0 && extraHours === 0) {
+        alert('Debes seleccionar al menos una ruta, adicional o horas extras para guardar el día trabajado.');
+        return;
+    }
+    
     const total = calculateDayTotal({ selectedRouteIds: selectedRoutes, selectedAdditions, hours: extraHours });
 
     calendarState[selectedDateKey] = {
@@ -448,6 +612,29 @@ const saveDayRecord = () => {
 const bindCalendarEvents = () => {
     document.getElementById('prevMonth')?.addEventListener('click', () => { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1); renderCalendar(); });
     document.getElementById('nextMonth')?.addEventListener('click', () => { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1); renderCalendar(); });
+    
+    document.querySelectorAll('input[name="invoiceType"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            invoiceType = e.target.value;
+            const weekSelector = document.getElementById('weekSelector');
+            const monthlyOptions = document.getElementById('monthlyOptions');
+            
+            if (weekSelector) {
+                weekSelector.classList.toggle('hidden', invoiceType !== 'weekly');
+                if (invoiceType === 'weekly') {
+                    populateWeekSelector();
+                }
+            }
+            
+            if (monthlyOptions) {
+                monthlyOptions.classList.toggle('hidden', invoiceType !== 'monthly');
+            }
+        });
+    });
+    
+    document.getElementById('weekSelect')?.addEventListener('change', (e) => {
+        selectedWeek = parseInt(e.target.value);
+    });
 
     document.getElementById('modalYes')?.addEventListener('click', () => handleDayDecision(true));
     document.getElementById('modalNo')?.addEventListener('click', () => handleDayDecision(false));
@@ -468,6 +655,9 @@ const initCalendar = () => {
     if (calendarInitialized) return;
     calendarInitialized = true;
     
+    // Asegurar que currentDate esté en el mes actual
+    currentDate = new Date();
+    
     calendarState = calendarLoadCalendarState();
     bindCalendarEvents();
     renderCalendarSummary();
@@ -475,4 +665,6 @@ const initCalendar = () => {
 };
 
 window.initCalendar = initCalendar;
+window.currentDate = currentDate;
+window.getWeeksInMonth = getWeeksInMonth;
 window.addEventListener('DOMContentLoaded', initCalendar);

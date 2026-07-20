@@ -47,9 +47,25 @@ const ADDITIONAL_OPTIONS = [
     { id: 'add_sabana_larga', label: 'viaje a Sabana Larga', value: 80000 }
 ];
 
+const DEFAULT_ROUTES = [
+    { id: 'route_barranquilla_completo', nombre: 'ruta barranquilla', valor: 100000 },
+    { id: 'route_barranquilla_medio', nombre: 'ruta barranquilla medio dia', valor: 50000 },
+    { id: 'route_barranquilla', nombre: 'ruta barranquilla', valor: 100000 }
+];
+
 const getRouteName = (routeId, routes) => {
     const route = routes.find((item) => item.id === routeId);
     if (route) return route.nombre || route.id;
+    
+    // Buscar en rutas predeterminadas
+    const defaultRoute = DEFAULT_ROUTES.find((item) => item.id === routeId);
+    if (defaultRoute) return defaultRoute.nombre;
+    
+    // Manejar casos especiales de datos antiguos
+    if (routeId === 'default' || routeId === 'route_barranquilla') {
+        return 'ruta barranquilla';
+    }
+    
     return routeId.replace(/route_/i, '').replace(/_/g, ' ');
 };
 
@@ -61,6 +77,10 @@ const getAdditionLabel = (additionId) => {
 const parseLocalDate = (isoDate) => {
     const [year, month, day] = isoDate.split('-').map(Number);
     return new Date(year, month - 1, day);
+};
+
+const getDateKey = (date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
 const formatDateLabel = (isoDate) => {
@@ -134,26 +154,45 @@ const pdfBuildConceptLine = (date, record, routes) => {
     return `${formatDateLabel(date)}: ${description} = ${pdfFormatCurrency(Number(record.totalDia) || 0)}`;
 };
 
-const pdfBuildContent = () => {
+const pdfBuildContent = (startDate = null, endDate = null, invoiceNumber = null, includeWeekly = true, isMonthly = false) => {
     const config = pdfGetConfig() || {};
     const calendarState = pdfGetCalendarState();
     const routes = pdfGetRoutes();
     const today = new Date();
     const issueDate = today.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const entries = Object.entries(calendarState).sort(([a], [b]) => a.localeCompare(b));
+    
+    let entries = Object.entries(calendarState).sort(([a], [b]) => a.localeCompare(b));
+    
+    if (startDate && endDate) {
+        const startKey = getDateKey(startDate);
+        const endKey = getDateKey(endDate);
+        entries = entries.filter(([dateKey]) => dateKey >= startKey && dateKey <= endKey);
+    }
+    
+    // Filtrar días ya facturados semanalmente si includeWeekly es false
+    if (!includeWeekly) {
+        entries = entries.filter(([, record]) => !record.invoiced || record.invoiceType !== 'weekly');
+    }
+    
     const registeredEntries = entries.filter(([, record]) => record.status === 'worked' || record.status === 'rest');
     const earned = entries.reduce((sum, [, record]) => sum + (Number(record.totalDia) || 0), 0);
-    const conceptLines = registeredEntries
+    let conceptLines = registeredEntries
         .map(([date, record]) => pdfBuildConceptLine(date, record, routes))
         .filter(Boolean);
+    
+    // Agregar línea de manipulación de movidirect solo para cuentas mensuales
+    if (isMonthly) {
+        conceptLines.push(`manipulacion de movidirect = ${pdfFormatCurrency(30000)}`);
+    }
 
     return {
         issueDate,
         config,
-        totalText: pdfFormatCurrency(earned),
-        totalTextWords: pdfNumberToWords(earned),
+        totalText: pdfFormatCurrency(earned + (isMonthly ? 30000 : 0)),
+        totalTextWords: pdfNumberToWords(earned + (isMonthly ? 30000 : 0)),
         conceptLines,
-        earned
+        earned: earned + (isMonthly ? 30000 : 0),
+        invoiceNumber
     };
 };
 
@@ -171,11 +210,12 @@ const pdfEscapeText = (text) => {
         .replace(/\)/g, '\\)');
 };
 
-const pdfBuildTextLines = () => {
-    const { issueDate, config, totalText, totalTextWords, conceptLines } = pdfBuildContent();
+const pdfBuildTextLines = (startDate = null, endDate = null, invoiceNumber = null, includeWeekly = true, isMonthly = false) => {
+    const { issueDate, config, totalText, totalTextWords, conceptLines } = pdfBuildContent(startDate, endDate, invoiceNumber, includeWeekly, isMonthly);
     const lines = [
         'CUENTA DE COBRO',
         `Fecha: ${issueDate}`,
+        ...(invoiceNumber ? [`Cuenta #${invoiceNumber}`] : []),
         '',
         'EMPRESA:',
         `${config.empresa || 'Empresa no definida'}`,
@@ -246,8 +286,8 @@ const pdfCreateBlob = (lines) => {
     return new Blob(parts.map((part) => typeof part === 'string' ? encoder.encode(part) : part), { type: 'application/pdf' });
 };
 
-const pdfGenerateInvoice = () => {
-    const lines = pdfBuildTextLines();
+const pdfGenerateInvoice = (startDate = null, endDate = null, invoiceNumber = null, includeWeekly = true, isMonthly = false) => {
+    const lines = pdfBuildTextLines(startDate, endDate, invoiceNumber, includeWeekly, isMonthly);
     const blob = pdfCreateBlob(lines);
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

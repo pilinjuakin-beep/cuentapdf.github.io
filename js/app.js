@@ -16,6 +16,40 @@ function setupActions() {
                 alert('Generación de PDF no disponible.');
                 return;
             }
+            
+            // Verificar si estamos en la página del calendario
+            if (document.body.dataset.page === 'calendar') {
+                const invoiceType = document.querySelector('input[name="invoiceType"]:checked')?.value || 'monthly';
+                
+                if (invoiceType === 'weekly') {
+                    const weekSelect = document.getElementById('weekSelect');
+                    const weekIndex = parseInt(weekSelect?.value || '0');
+                    
+                    if (typeof window.getWeeksInMonth === 'function' && typeof window.currentDate !== 'undefined') {
+                        const weeks = window.getWeeksInMonth(window.currentDate.getFullYear(), window.currentDate.getMonth());
+                        if (weeks[weekIndex]) {
+                            const week = weeks[weekIndex];
+                            const invoiceNumber = `Semana ${weekIndex + 1} de ${window.currentDate.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })}`;
+                            window.generateInvoicePDF(week.start, week.end, invoiceNumber);
+                            markDaysAsInvoiced(week.start, week.end, invoiceNumber, 'weekly');
+                            return;
+                        }
+                    }
+                } else {
+                    // Generar cuenta mensual
+                    const year = window.currentDate?.getFullYear() || new Date().getFullYear();
+                    const month = window.currentDate?.getMonth() || new Date().getMonth();
+                    const startDate = new Date(year, month, 1);
+                    const endDate = new Date(year, month + 1, 0);
+                    const includeWeekly = document.getElementById('includeWeeklyInMonthly')?.checked || false;
+                    const invoiceNumber = `Mes de ${window.currentDate?.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }) || new Date().toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })}`;
+                    window.generateInvoicePDF(startDate, endDate, invoiceNumber, includeWeekly, true);
+                    markDaysAsInvoicedMonthly(startDate, endDate, invoiceNumber, includeWeekly);
+                    return;
+                }
+            }
+            
+            // Por defecto, generar cuenta mensual (para otras páginas)
             window.generateInvoicePDF();
         });
     });
