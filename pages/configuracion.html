@@ -30,25 +30,22 @@
                     <input type="text" name="cedula" required>
                 </label>
                 <label>
-                    <span>Correo</span>
-                    <input type="email" name="correo" required>
-                </label>
-                <label>
                     <span>Teléfono</span>
                     <input type="tel" name="telefono" required>
                 </label>
                 <label>
-                    <span>Banco</span>
-                    <input type="text" name="banco" required>
-                </label>
-                <label>
                     <span>Tipo de cuenta</span>
-                    <select name="tipoCuenta" required>
+                    <select name="tipoCuenta" id="tipoCuentaSelect" required>
                         <option value="">Selecciona</option>
                         <option value="Ahorros">Ahorros</option>
                         <option value="Corriente">Corriente</option>
                         <option value="Cuenta de ahorro digital – Nequi">Cuenta de ahorro digital – Nequi</option>
+                        <option value="__custom__">Agregar cuenta</option>
                     </select>
+                </label>
+                <label id="customAccountTypeWrap" class="hidden">
+                    <span>Nombre de la cuenta</span>
+                    <input type="text" name="tipoCuentaCustom" placeholder="Ej: Daviplata, Bancolombia ahorros">
                 </label>
                 <label>
                     <span>Número de cuenta</span>
@@ -61,10 +58,6 @@
                 <label>
                     <span>NIT</span>
                     <input type="text" name="nit" required>
-                </label>
-                <label>
-                    <span>Dirección</span>
-                    <input type="text" name="direccion" required>
                 </label>
                 <label>
                     <span>Ciudad</span>

@@ -36,9 +36,9 @@
 
         <section class="stats-grid">
             <article class="card">
-                <span class="card-label">Mes cotizado</span>
-                <p class="card-value" id="monthTotal">$0</p>
-                <p class="muted-text"><span id="monthLabel"></span></p>
+                <span class="card-label">Dinero generado total</span>
+                <p class="card-value" id="totalInvoiced">$0</p>
+                <p class="muted-text"><span id="totalInvoicedLabel">Todas las cuentas facturadas</span></p>
             </article>
             <article class="card">
                 <span class="card-label">Dinero ganado este mes</span>
@@ -59,7 +59,62 @@
             <article class="card">
                 <span class="card-label">Proyección mensual</span>
                 <p class="card-value" data-metric="projection">$0</p>
+                <p class="muted-text">Sin domingos</p>
             </article>
+        </section>
+
+        <section class="panel-card invoice-stats-section">
+            <div class="section-header">
+                <div>
+                    <p class="eyebrow">Facturación</p>
+                    <h2 id="invoiceMonthTitle">Mes actual</h2>
+                    <p class="muted-text" id="invoiceMonthSubtitle"></p>
+                </div>
+            </div>
+
+            <div class="invoice-breakdown">
+                <article class="invoice-block invoice-block--monthly">
+                    <div class="invoice-block-header">
+                        <h3>Cuenta mensual</h3>
+                        <span class="invoice-badge" id="monthlyInvoiceBadge">Pendiente</span>
+                    </div>
+                    <div class="invoice-metrics">
+                        <div class="invoice-metric">
+                            <span class="invoice-metric-label">Total generado</span>
+                            <strong class="invoice-metric-value" id="monthlyInvoicedTotal">$0</strong>
+                        </div>
+                        <div class="invoice-metric">
+                            <span class="invoice-metric-label">Días incluidos</span>
+                            <strong class="invoice-metric-value" id="monthlyInvoicedDays">0</strong>
+                        </div>
+                        <div class="invoice-metric">
+                            <span class="invoice-metric-label">Semanas cubiertas</span>
+                            <strong class="invoice-metric-value" id="monthlyInvoicedWeeks">0</strong>
+                        </div>
+                    </div>
+                    <p class="muted-text invoice-note" id="monthlyInvoiceNote">Aún no has generado la cuenta mensual.</p>
+                </article>
+
+                <article class="invoice-block invoice-block--weekly">
+                    <div class="invoice-block-header">
+                        <h3>Cuentas semanales</h3>
+                        <span class="invoice-badge invoice-badge--weekly" id="weeklyCountBadge">0 semanas</span>
+                    </div>
+                    <div class="invoice-metrics invoice-metrics--compact">
+                        <div class="invoice-metric">
+                            <span class="invoice-metric-label">Total semanal</span>
+                            <strong class="invoice-metric-value" id="weeklyInvoicedTotal">$0</strong>
+                        </div>
+                        <div class="invoice-metric">
+                            <span class="invoice-metric-label">Días en semanas</span>
+                            <strong class="invoice-metric-value" id="weeklyInvoicedDays">0</strong>
+                        </div>
+                    </div>
+                    <div id="weeklyInvoiceList" class="weekly-invoice-list">
+                        <p class="muted-text invoice-empty">No hay semanas facturadas este mes.</p>
+                    </div>
+                </article>
+            </div>
         </section>
 
         <section class="panel-overview">

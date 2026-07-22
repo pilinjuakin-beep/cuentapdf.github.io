@@ -3,6 +3,8 @@
 */
 
 const STORAGE_KEY = 'cuentaCobro_calendar';
+const WEEK_LOCK_KEY = 'cuentaCobro_weekLocks';
+const MONTH_LOCK_KEY = 'cuentaCobro_monthLocks';
 
 const calendarSafeGet = (key, fallback) => {
     try {
@@ -12,6 +14,90 @@ const calendarSafeGet = (key, fallback) => {
         console.warn(`LocalStorage parse error for ${key}, resetting.`, err);
         try { localStorage.removeItem(key); } catch (e) {}
         return fallback;
+    }
+};
+
+const getWeekLocks = () => {
+    return calendarSafeGet(WEEK_LOCK_KEY, {});
+};
+
+const saveWeekLocks = (locks) => {
+    try {
+        localStorage.setItem(WEEK_LOCK_KEY, JSON.stringify(locks));
+    } catch (err) {
+        console.warn('Failed to save week locks', err);
+    }
+};
+
+const getWeekLockKey = (year, month, weekIndex) => {
+    return `${year}-${String(month + 1).padStart(2, '0')}-week-${weekIndex}`;
+};
+
+const isWeekLocked = (year, month, weekIndex) => {
+    const locks = getWeekLocks();
+    const key = getWeekLockKey(year, month, weekIndex);
+    return locks[key]?.locked || false;
+};
+
+const lockWeek = (year, month, weekIndex, invoiceNumber) => {
+    const locks = getWeekLocks();
+    const key = getWeekLockKey(year, month, weekIndex);
+    locks[key] = {
+        locked: true,
+        invoiceNumber: invoiceNumber,
+        lockedAt: new Date().toISOString()
+    };
+    saveWeekLocks(locks);
+};
+
+const unlockWeek = (year, month, weekIndex) => {
+    const locks = getWeekLocks();
+    const key = getWeekLockKey(year, month, weekIndex);
+    if (locks[key]) {
+        delete locks[key];
+        saveWeekLocks(locks);
+    }
+};
+
+const getMonthLocks = () => {
+    return calendarSafeGet(MONTH_LOCK_KEY, {});
+};
+
+const saveMonthLocks = (locks) => {
+    try {
+        localStorage.setItem(MONTH_LOCK_KEY, JSON.stringify(locks));
+    } catch (err) {
+        console.warn('Failed to save month locks', err);
+    }
+};
+
+const getMonthLockKey = (year, month) => {
+    return `${year}-${String(month + 1).padStart(2, '0')}`;
+};
+
+const isMonthLocked = (year, month) => {
+    const locks = getMonthLocks();
+    const key = getMonthLockKey(year, month);
+    return locks[key]?.locked || false;
+};
+
+const lockMonth = (year, month, invoiceNumber) => {
+    const locks = getMonthLocks();
+    const key = getMonthLockKey(year, month);
+    locks[key] = {
+        locked: true,
+        invoiceNumber: invoiceNumber,
+        lockedAt: new Date().toISOString()
+    };
+    saveMonthLocks(locks);
+};
+
+const unlockMonth = (year, month) => {
+    const locks = getMonthLocks();
+    const key = getMonthLockKey(year, month);
+    if (locks[key]) {
+        delete locks[key];
+        saveMonthLocks(locks);
     }
 };
 
@@ -113,6 +199,24 @@ const getWeeksInMonth = (year, month) => {
     return weeks;
 };
 
+const getWeekIndexForDate = (date, year, month) => {
+    const weeks = getWeeksInMonth(year, month);
+    for (let i = 0; i < weeks.length; i++) {
+        const week = weeks[i];
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+        const weekStart = new Date(week.start);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(week.end);
+        weekEnd.setHours(23, 59, 59, 999);
+        
+        if (checkDate >= weekStart && checkDate <= weekEnd) {
+            return i;
+        }
+    }
+    return -1;
+};
+
 const populateWeekSelector = () => {
     const weekSelect = document.getElementById('weekSelect');
     if (!weekSelect) return;
@@ -151,6 +255,84 @@ const populateWeekSelector = () => {
         selectedWeek = currentWeekIndex;
         weekSelect.value = currentWeekIndex;
     }
+    
+    updateUnlockWeekButton();
+};
+
+const updateUnlockWeekButton = () => {
+    const unlockBtn = document.getElementById('unlockWeekBtn');
+    const weekSelect = document.getElementById('weekSelect');
+    if (!unlockBtn || !weekSelect) return;
+    
+    const weekIndex = parseInt(weekSelect.value);
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    if (isWeekLocked(year, month, weekIndex)) {
+        unlockBtn.classList.remove('hidden');
+    } else {
+        unlockBtn.classList.add('hidden');
+    }
+};
+
+const handleUnlockWeek = () => {
+    const weekSelect = document.getElementById('weekSelect');
+    if (!weekSelect) return;
+    
+    const weekIndex = parseInt(weekSelect.value);
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    if (!isWeekLocked(year, month, weekIndex)) {
+        alert('Esta semana no está bloqueada.');
+        return;
+    }
+    
+    const locks = getWeekLocks();
+    const lockKey = getWeekLockKey(year, month, weekIndex);
+    const invoiceNumber = locks[lockKey]?.invoiceNumber || 'esta cuenta de cobro';
+    
+    if (confirm(`⚠️ ¿Estás seguro de desbloquear la semana ${weekIndex + 1}?\n\nEsta acción permitirá editar los días de esta semana que fue facturada como "${invoiceNumber}".\n\nEl desbloqueo no elimina el registro de facturación, solo permite modificaciones.`)) {
+        unlockWeek(year, month, weekIndex);
+        updateUnlockWeekButton();
+        renderCalendar();
+        alert('Semana desbloqueada correctamente. Ahora puedes editar los días de esta semana.');
+    }
+};
+
+const updateUnlockMonthButton = () => {
+    const unlockBtn = document.getElementById('unlockMonthBtn');
+    if (!unlockBtn) return;
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    if (isMonthLocked(year, month)) {
+        unlockBtn.classList.remove('hidden');
+    } else {
+        unlockBtn.classList.add('hidden');
+    }
+};
+
+const handleUnlockMonth = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    if (!isMonthLocked(year, month)) {
+        alert('Este mes no está bloqueado.');
+        return;
+    }
+    
+    const locks = getMonthLocks();
+    const lockKey = getMonthLockKey(year, month);
+    const invoiceNumber = locks[lockKey]?.invoiceNumber || 'esta cuenta de cobro mensual';
+    
+    if (confirm(`⚠️ ¿Estás seguro de desbloquear el mes ${year}-${String(month + 1).padStart(2, '0')}?\n\nEsta acción permitirá editar los días de este mes que fue facturado como "${invoiceNumber}".\n\nEl desbloqueo no elimina el registro de facturación, solo permite modificaciones.`)) {
+        unlockMonth(year, month);
+        updateUnlockMonthButton();
+        renderCalendar();
+        alert('Mes desbloqueado correctamente. Ahora puedes editar los días de este mes.');
+    }
 };
 
 const markDaysAsInvoiced = (startDate, endDate, invoiceNumber, invoiceType = 'monthly') => {
@@ -167,13 +349,14 @@ const markDaysAsInvoiced = (startDate, endDate, invoiceNumber, invoiceType = 'mo
     }
     
     calendarSaveCalendarState(calendarState);
-    renderCalendar();
     
-    // Pasar automáticamente a la siguiente semana si está disponible
+    // Si es factura semanal, bloquear la semana
     if (invoiceType === 'weekly') {
         const weekSelect = document.getElementById('weekSelect');
         if (weekSelect) {
             const currentWeekIndex = parseInt(weekSelect.value);
+            lockWeek(currentDate.getFullYear(), currentDate.getMonth(), currentWeekIndex, invoiceNumber);
+            
             const weeks = getWeeksInMonth(currentDate.getFullYear(), currentDate.getMonth());
             
             if (currentWeekIndex < weeks.length - 1) {
@@ -183,6 +366,8 @@ const markDaysAsInvoiced = (startDate, endDate, invoiceNumber, invoiceType = 'mo
             }
         }
     }
+    
+    renderCalendar();
 };
 
 window.markDaysAsInvoiced = markDaysAsInvoiced;
@@ -204,6 +389,12 @@ const markDaysAsInvoicedMonthly = (startDate, endDate, invoiceNumber, includeWee
     }
     
     calendarSaveCalendarState(calendarState);
+    
+    // Bloquear el mes automáticamente
+    const year = start.getFullYear();
+    const month = start.getMonth();
+    lockMonth(year, month, invoiceNumber);
+    
     renderCalendar();
 };
 
@@ -253,6 +444,21 @@ const createCalendarCell = (date, isCurrentMonth) => {
         } else {
             button.classList.add('calendar-day--invoiced-monthly');
         }
+    }
+
+    // Verificar bloqueos - el semanal tiene prioridad visual sobre el mensual
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    // Primero aplicar bloqueo mensual si existe
+    if (isMonthLocked(year, month)) {
+        button.classList.add('calendar-day--month-locked');
+    }
+    
+    // Luego aplicar bloqueo semanal si existe (tendrá prioridad visual)
+    const weekIndex = getWeekIndexForDate(date, year, month);
+    if (weekIndex >= 0 && isWeekLocked(year, month, weekIndex)) {
+        button.classList.add('calendar-day--week-locked');
     }
 
     if (getDateKey(date) === getDateKey(new Date())) {
@@ -414,6 +620,39 @@ const openDayModal = (date) => {
         adicionales: [],
         horasExtras: { cantidad: 0, valorPorHora: HOURLY_RATE },
     };
+
+    // Verificar si la semana está bloqueada
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const weekIndex = getWeekIndexForDate(date, year, month);
+    if (weekIndex >= 0 && isWeekLocked(year, month, weekIndex)) {
+        const locks = getWeekLocks();
+        const lockKey = getWeekLockKey(year, month, weekIndex);
+        const invoiceNumber = locks[lockKey]?.invoiceNumber || 'esta cuenta de cobro';
+        
+        if (!confirm(`⚠️ Esta semana ya fue facturada (${invoiceNumber}).\n\nPara editar este día necesitas desbloquear la semana primero.\n\n¿Deseas desbloquear esta semana y continuar con la edición?`)) {
+            return;
+        }
+        
+        // Desbloquear la semana si el usuario confirma
+        unlockWeek(year, month, weekIndex);
+        renderCalendar();
+    }
+    
+    // Verificar si el mes está bloqueado (sistema separado)
+    if (isMonthLocked(year, month)) {
+        const locks = getMonthLocks();
+        const lockKey = getMonthLockKey(year, month);
+        const invoiceNumber = locks[lockKey]?.invoiceNumber || 'esta cuenta de cobro mensual';
+        
+        if (!confirm(`⚠️ Este mes ya fue facturado (${invoiceNumber}).\n\nPara editar este día necesitas desbloquear el mes primero.\n\n¿Deseas desbloquear este mes y continuar con la edición?`)) {
+            return;
+        }
+        
+        // Desbloquear el mes si el usuario confirma
+        unlockMonth(year, month);
+        renderCalendar();
+    }
 
     // Verificar si el día está facturado
     if (record.invoiced) {
@@ -610,8 +849,16 @@ const saveDayRecord = () => {
 };
 
 const bindCalendarEvents = () => {
-    document.getElementById('prevMonth')?.addEventListener('click', () => { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1); renderCalendar(); });
-    document.getElementById('nextMonth')?.addEventListener('click', () => { currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1); renderCalendar(); });
+    document.getElementById('prevMonth')?.addEventListener('click', () => { 
+        currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1); 
+        renderCalendar(); 
+        updateUnlockMonthButton();
+    });
+    document.getElementById('nextMonth')?.addEventListener('click', () => { 
+        currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1); 
+        renderCalendar(); 
+        updateUnlockMonthButton();
+    });
     
     document.querySelectorAll('input[name="invoiceType"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -634,7 +881,11 @@ const bindCalendarEvents = () => {
     
     document.getElementById('weekSelect')?.addEventListener('change', (e) => {
         selectedWeek = parseInt(e.target.value);
+        updateUnlockWeekButton();
     });
+    
+    document.getElementById('unlockWeekBtn')?.addEventListener('click', handleUnlockWeek);
+    document.getElementById('unlockMonthBtn')?.addEventListener('click', handleUnlockMonth);
 
     document.getElementById('modalYes')?.addEventListener('click', () => handleDayDecision(true));
     document.getElementById('modalNo')?.addEventListener('click', () => handleDayDecision(false));
@@ -662,6 +913,7 @@ const initCalendar = () => {
     bindCalendarEvents();
     renderCalendarSummary();
     renderCalendar();
+    updateUnlockMonthButton();
 };
 
 window.initCalendar = initCalendar;

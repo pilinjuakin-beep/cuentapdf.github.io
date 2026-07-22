@@ -20,6 +20,58 @@ const setConfig = (config) => {
 const isConfigPage = () => window.location.pathname.includes('configuracion.html');
 const isEditMode = () => new URLSearchParams(window.location.search).get('edit') === 'true';
 
+const PREDEFINED_ACCOUNT_TYPES = [
+    'Ahorros',
+    'Corriente',
+    'Cuenta de ahorro digital – Nequi'
+];
+const CUSTOM_ACCOUNT_VALUE = '__custom__';
+
+const isPredefinedAccountType = (value) => PREDEFINED_ACCOUNT_TYPES.includes(value);
+
+const syncCustomAccountField = () => {
+    const select = document.getElementById('tipoCuentaSelect');
+    const wrap = document.getElementById('customAccountTypeWrap');
+    const customInput = document.querySelector('[name="tipoCuentaCustom"]');
+    if (!select || !wrap) return;
+
+    const isCustom = select.value === CUSTOM_ACCOUNT_VALUE;
+    wrap.classList.toggle('hidden', !isCustom);
+    if (customInput) {
+        customInput.required = isCustom;
+    }
+};
+
+const applyTipoCuentaToForm = (tipoCuenta) => {
+    const select = document.getElementById('tipoCuentaSelect');
+    const customInput = document.querySelector('[name="tipoCuentaCustom"]');
+    if (!select) return;
+
+    if (tipoCuenta && !isPredefinedAccountType(tipoCuenta)) {
+        select.value = CUSTOM_ACCOUNT_VALUE;
+        if (customInput) customInput.value = tipoCuenta;
+    } else {
+        select.value = tipoCuenta || '';
+        if (customInput) customInput.value = '';
+    }
+
+    syncCustomAccountField();
+};
+
+const getTipoCuentaFromForm = (formData) => {
+    const selected = formData.get('tipoCuenta')?.toString().trim() || '';
+    if (selected === CUSTOM_ACCOUNT_VALUE) {
+        return formData.get('tipoCuentaCustom')?.toString().trim() || '';
+    }
+    return selected;
+};
+
+const bindTipoCuentaField = () => {
+    const select = document.getElementById('tipoCuentaSelect');
+    if (!select) return;
+    select.addEventListener('change', syncCustomAccountField);
+};
+
 const fillForm = (config) => {
     if (!config) {
         console.log('[config] fillForm called but config is empty');
@@ -32,7 +84,14 @@ const fillForm = (config) => {
     }
     console.log('[config] fillForm with', config);
 
+    if (config.tipoCuenta !== undefined) {
+        applyTipoCuentaToForm(config.tipoCuenta);
+    }
+
     Object.entries(config).forEach(([key, value]) => {
+        if (key === 'tipoCuenta') {
+            return;
+        }
 
         const field = form.elements.namedItem(key);
         if (!field) {
@@ -81,17 +140,22 @@ const bindForm = () => {
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         const formData = new FormData(form);
+        const tipoCuenta = getTipoCuentaFromForm(formData);
+
+        if (!tipoCuenta) {
+            showMessage('Escribe el nombre de la cuenta personalizada.');
+            document.querySelector('[name="tipoCuentaCustom"]')?.focus();
+            return;
+        }
+
         const config = {
             nombre: formData.get('nombre')?.toString().trim() || '',
             cedula: formData.get('cedula')?.toString().trim() || '',
-            correo: formData.get('correo')?.toString().trim() || '',
             telefono: formData.get('telefono')?.toString().trim() || '',
-            banco: formData.get('banco')?.toString().trim() || '',
-            tipoCuenta: formData.get('tipoCuenta')?.toString().trim() || '',
+            tipoCuenta,
             numeroCuenta: formData.get('numeroCuenta')?.toString().trim() || '',
             empresa: formData.get('empresa')?.toString().trim() || '',
             nit: formData.get('nit')?.toString().trim() || '',
-            direccion: formData.get('direccion')?.toString().trim() || '',
             ciudad: formData.get('ciudad')?.toString().trim() || '',
         };
 
@@ -133,6 +197,7 @@ const initConfiguration = () => {
     // If the form exists on this page, always fill it with stored values (if any)
     if (form) {
         fillForm(config);
+        bindTipoCuentaField();
         bindForm();
         return;
     }

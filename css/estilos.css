@@ -125,7 +125,7 @@ h1 {
     font-weight: 700;
 }
 
-..panel-overview {
+.panel-overview {
     margin-top: 18px;
 }
 
@@ -329,6 +329,10 @@ textarea.input-invalid {
     background: var(--surface-strong);
     border-radius: 16px;
     border: 1px solid rgba(15, 23, 42, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .week-selector label {
@@ -347,6 +351,10 @@ textarea.input-invalid {
     background: var(--surface-strong);
     border-radius: 16px;
     border: 1px solid rgba(15, 23, 42, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .checkbox-label {
@@ -448,6 +456,38 @@ textarea.input-invalid {
     opacity: 0.4;
     text-decoration: line-through;
     pointer-events: none;
+}
+
+.calendar-day--week-locked {
+    border-color: rgba(245, 158, 11, 0.8) !important;
+    background: rgba(245, 158, 11, 0.2) !important;
+    position: relative;
+}
+
+.calendar-day--week-locked::after {
+    content: '🔒';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.9rem;
+    color: #d97706 !important;
+    font-weight: 700;
+}
+
+.calendar-day--month-locked {
+    border-color: rgba(139, 92, 246, 0.6);
+    background: rgba(139, 92, 246, 0.12);
+    position: relative;
+}
+
+.calendar-day--month-locked::after {
+    content: '🔒';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.9rem;
+    color: #7c3aed;
+    font-weight: 700;
 }
 
 .week-invoice-badge {
@@ -552,7 +592,7 @@ textarea.input-invalid {
     margin-bottom: 18px;
 }
 
-..route-checkbox {
+.route-checkbox {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -620,6 +660,138 @@ textarea.input-invalid {
     font-weight: 600;
 }
 
+.invoice-stats-section {
+    margin-bottom: 18px;
+}
+
+.invoice-stats-section h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.invoice-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.invoice-block {
+    padding: 22px;
+    border-radius: 20px;
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+}
+
+.invoice-block--monthly {
+    border-top: 4px solid var(--primary);
+}
+
+.invoice-block--weekly {
+    border-top: 4px solid #7c3aed;
+}
+
+.invoice-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.invoice-block-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.invoice-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(107, 114, 128, 0.12);
+    color: var(--muted);
+}
+
+.invoice-badge--generated {
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--primary-strong);
+}
+
+.invoice-badge--weekly {
+    background: rgba(124, 58, 237, 0.12);
+    color: #6d28d9;
+}
+
+.invoice-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.invoice-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.invoice-metric-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.invoice-metric-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.invoice-metrics--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 16px;
+}
+
+.invoice-note,
+.invoice-empty {
+    margin: 16px 0 0;
+}
+
+.weekly-invoice-list {
+    display: grid;
+    gap: 10px;
+}
+
+.weekly-invoice-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.weekly-invoice-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.weekly-invoice-days,
+.weekly-invoice-money {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.weekly-invoice-days {
+    color: var(--muted);
+}
+
+.weekly-invoice-money {
+    font-weight: 700;
+    color: #6d28d9;
+}
+
 @media (max-width: 840px) {
     .page-header {
         flex-direction: column;
@@ -628,6 +800,15 @@ textarea.input-invalid {
 
     .form-actions {
         justify-content: stretch;
+    }
+
+    .invoice-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .weekly-invoice-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
     }
 }
 

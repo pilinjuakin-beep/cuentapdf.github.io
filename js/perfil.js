@@ -11,14 +11,11 @@ const populateProfile = () => {
     const map = {
         nombre: 'p-nombre',
         cedula: 'p-cedula',
-        correo: 'p-correo',
         telefono: 'p-telefono',
-        banco: 'p-banco',
         tipoCuenta: 'p-tipoCuenta',
         numeroCuenta: 'p-numeroCuenta',
         empresa: 'p-empresa',
         nit: 'p-nit',
-        direccion: 'p-direccion',
         ciudad: 'p-ciudad',
     };
 
