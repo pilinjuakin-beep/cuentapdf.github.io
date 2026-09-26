@@ -531,7 +531,7 @@ const DEFAULT_ROUTES = [
     { id: 'route_barranquilla_completo', nombre: 'Barranquilla día completo', valor: 100000 },
     { id: 'route_barranquilla_medio', nombre: 'Barranquilla medio día', valor: 50000 }
 ];
-const HOURLY_RATE = 8000;
+const HOURLY_RATE = 10000;
 
 const getRouteOptions = (storedRoutes) => {
     const allRoutes = [...DEFAULT_ROUTES, ...storedRoutes];
