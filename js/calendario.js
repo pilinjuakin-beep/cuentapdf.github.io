@@ -522,7 +522,7 @@ const renderCalendar = () => {
 
 const ADDITIONAL_OPTIONS = [
     { id: 'add_galapa', label: 'Galapa', value: 15000 },
-    { id: 'add_cienaga', label: 'Ciénaga', value: 25000 },
+    { id: 'add_cienaga', label: 'Ciénaga', value: 50000 },
     { id: 'add_lomita', label: 'Lomita de Arena', value: 25000 },
     { id: 'add_davita', label: 'Davita', value: 40000 },
     { id: 'add_sabana_larga', label: 'Sabana Larga', value: 80000 }
